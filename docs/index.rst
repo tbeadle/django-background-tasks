@@ -42,12 +42,8 @@ Migrate your database:
 
 Supported versions and compatibility
 ====================================
-* Python: 2.7, 3.4-3.7
-* Django: 1.8, 1.11, 2.1, 2.2
-
-Full Django LTS to LTS compatibility through django-compat_.
-
-*Note: Django 1.8 is an expired LTS release. It's not advisable to use this version of Django anymore.*
+* Python: 3.8-3.12
+* Django: 4.0+
 
 
 Creating and registering tasks
