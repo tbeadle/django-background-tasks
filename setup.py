@@ -5,7 +5,7 @@ version = __import__('background_task').__version__
 
 classifiers = [c for c in open('classifiers').read().splitlines() if '#' not in c]
 
-with open("README.md", "r") as fh:
+with open("README.rst", "r") as fh:
     long_description = fh.read()
 
 setup(
