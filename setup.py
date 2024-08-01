@@ -9,14 +9,14 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name='django-background-tasks-updated',
+    name='django-background-tasks',
     version=version,
     description='Database backed asynchronous task queue',
     long_description=long_description,
     long_description_content_type='text/markdown',
     author='arteria GmbH, John Montgomery, Alberto Petrucci, Jon Miller',
     author_email='iamjonamiller@gmail.com',
-    url='http://github.com/iamjonmiller/django-background-tasks',
+    url='https://github.com/django-background-tasks/django-background-tasks',
     license='BSD',
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,

@@ -1,9 +1,7 @@
-# Django Background Tasks Updated
+# Django Background Tasks
 Django Background Task is a database-backed work queue for Django, loosely based
 around [Ruby's DelayedJob](https://github.com/tobi/delayed_job) library. This project was
-adopted and adapted from [lilspikey's](https://github.com/lilspikey/) `django-background-task`. This fork includes minor fixes to support Django 4.0+ (removal of `six`) and Python 3.12 (removal of `imp`).
-
-To avoid conflicts on PyPI we renamed it to django-background-tasks-updated (plural).
+adopted and adapted from [lilspikey's](https://github.com/lilspikey/) `django-background-task`.
 # Docs
 See [Read the docs](http://django-background-tasks.readthedocs.io/en/latest/)
 # Donations
