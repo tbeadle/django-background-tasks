@@ -25,5 +25,6 @@ Contributors
 * Aleksandr Levchuk (alevchuk)
 * Kai-Lun Huang (kaibaooo)
 * cedricfarinazzo
+* Jonathan Miller (iamjonmiller)
 
 Your name could stand here :)

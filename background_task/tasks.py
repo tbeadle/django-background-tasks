@@ -111,6 +111,7 @@ class Tasks(object):
                                            remove_existing_tasks, self._runner)
             self._tasks[_name] = proxy
             return proxy
+
         if fn:
             return _decorator(fn)
 
@@ -193,15 +194,14 @@ class TaskSchedule(object):
     def action(self):
         return self._action or TaskSchedule.SCHEDULE
 
-
     def __repr__(self):
         return 'TaskSchedule(run_at=%s, priority=%s)' % (self._run_at,
                                                          self._priority)
 
     def __eq__(self, other):
         return self._run_at == other._run_at \
-           and self._priority == other._priority \
-           and self._action == other._action
+            and self._priority == other._priority \
+            and self._action == other._action
 
 
 class DBTaskRunner(object):
@@ -276,7 +276,6 @@ class TaskProxy(object):
         self.queue = queue
         self.remove_existing_tasks = remove_existing_tasks
 
-
     def __call__(self, *args, **kwargs):
         schedule = kwargs.pop('schedule', None)
         schedule = TaskSchedule.create(schedule).merge(self.schedule)
@@ -288,7 +287,7 @@ class TaskProxy(object):
         creator = kwargs.pop('creator', None)
         repeat = kwargs.pop('repeat', None)
         repeat_until = kwargs.pop('repeat_until', None)
-        remove_existing_tasks =  kwargs.pop('remove_existing_tasks', self.remove_existing_tasks)
+        remove_existing_tasks = kwargs.pop('remove_existing_tasks', self.remove_existing_tasks)
 
         return self.runner.schedule(self.name, args, kwargs, run_at, priority,
                                     action, queue, verbose_name, creator,
@@ -298,6 +297,7 @@ class TaskProxy(object):
     def __str__(self):
         return 'TaskProxy(%s)' % self.name
 
+
 tasks = Tasks()
 
 
@@ -305,17 +305,10 @@ def autodiscover():
     """
     Autodiscover tasks.py files in much the same way as admin app
     """
-    import imp
     from django.conf import settings
 
     for app in settings.INSTALLED_APPS:
         try:
-            app_path = import_module(app).__path__
-        except (AttributeError, ImportError):
-            continue
-        try:
-            imp.find_module('tasks', app_path)
+            import_module("%s.tasks" % app)
         except ImportError:
             continue
-
-        import_module("%s.tasks" % app)
