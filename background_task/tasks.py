@@ -51,8 +51,10 @@ def bg_runner(proxy_task, task=None, *args, **kwargs):
             signals.task_successful.send(
                 sender=task.__class__, task_id=task.id, completed_task=completed
             )
-            task.create_repetition()
+            new_task = task.create_repetition()
             task.delete()
+            if new_task:
+                new_task.save()
             logger.info("Ran task and deleting %s", task)
 
     except Exception as ex:
@@ -97,7 +99,12 @@ class Tasks(object):
         )
 
     def background(
-        self, name=None, schedule=None, queue=None, remove_existing_tasks=False
+        self,
+        name=None,
+        schedule=None,
+        queue=None,
+        remove_existing_tasks=False,
+        singleton=False,
     ):
         """
         decorator to turn a regular function into
@@ -238,6 +245,7 @@ class DBTaskRunner(object):
         repeat=None,
         repeat_until=None,
         remove_existing_tasks=False,
+        singleton=False,
     ):
         """Simply create a task object in the database"""
         task = Task.objects.new_task(
@@ -252,6 +260,7 @@ class DBTaskRunner(object):
             repeat,
             repeat_until,
             remove_existing_tasks,
+            singleton,
         )
         if action != TaskSchedule.SCHEDULE:
             task_hash = task.task_hash
@@ -267,8 +276,11 @@ class DBTaskRunner(object):
             elif action == TaskSchedule.CHECK_EXISTING:
                 if existing.count():
                     return
-
-        task.save()
+        if singleton:
+            task.pre_save()
+            Task.objects.bulk_create([task], ignore_conflicts=True)
+        else:
+            task.save()
         signals.task_created.send(sender=self.__class__, task=task)
         return task
 
@@ -327,6 +339,7 @@ class TaskProxy(object):
         remove_existing_tasks = kwargs.pop(
             "remove_existing_tasks", self.remove_existing_tasks
         )
+        singleton = kwargs.pop("singleton", False)
 
         return self.runner.schedule(
             self.name,
@@ -341,6 +354,7 @@ class TaskProxy(object):
             repeat,
             repeat_until,
             remove_existing_tasks,
+            singleton,
         )
 
     def __str__(self):

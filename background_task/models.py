@@ -102,6 +102,7 @@ class TaskManager(models.Manager):
         repeat=None,
         repeat_until=None,
         remove_existing_tasks=False,
+        singleton=False,
     ):
         """
         If `remove_existing_tasks` is True, all unlocked tasks with the identical task hash will be removed.
@@ -127,6 +128,7 @@ class TaskManager(models.Manager):
             creator=creator,
             repeat=repeat or Task.NEVER,
             repeat_until=repeat_until,
+            singleton=singleton or None,
         )
 
     def get_task(self, task_name, args=None, kwargs=None):
@@ -200,6 +202,14 @@ class Task(models.Model):
     )
     creator_object_id = models.PositiveIntegerField(null=True, blank=True)
     creator = GenericForeignKey("creator_content_type", "creator_object_id")
+
+    # Use this field in a unique index with task_hash so that we can
+    # update get_or_create() in a way that is impervious to race conditions if
+    # multiple processes are trying to create the task simultaneously. It will
+    # be set to True for singleton tasks in which case the uniqueness constraint
+    # will hold up. Otherwise, it is set to NULL so that those rows will always
+    # be considered 'unique'.
+    singleton = models.BooleanField(blank=True, null=True)
 
     objects = TaskManager()
 
@@ -334,13 +344,16 @@ class Task(models.Model):
             creator=self.creator,
             repeat=self.repeat,
             repeat_until=self.repeat_until,
+            singleton=self.singleton,
         )
-        new_task.save()
         return new_task
 
-    def save(self, *arg, **kw):
+    def pre_save(self, *arg, **kw):
         # force NULL rather than empty string
         self.locked_by = self.locked_by or None
+
+    def save(self, *arg, **kw):
+        self.pre_save()
         return super(Task, self).save(*arg, **kw)
 
     def __str__(self):
@@ -348,6 +361,12 @@ class Task(models.Model):
 
     class Meta:
         db_table = "background_task"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["task_hash", "singleton"],
+                name="%(app_label)s_%(class)s_unique_task_hash_singleton",
+            )
+        ]
 
 
 class CompletedTaskQuerySet(models.QuerySet):
